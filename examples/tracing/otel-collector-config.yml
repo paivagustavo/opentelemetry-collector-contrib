@@ -20,9 +20,11 @@ extensions:
   health_check:
   pprof:
   zpages:
+    endpoint: ":55679"
+  devmode:
 
 service:
-  extensions: [pprof, zpages, health_check]
+  extensions: [pprof, zpages, health_check, devmode]
   pipelines:
     traces:
       receivers: [otlp, zipkin]
