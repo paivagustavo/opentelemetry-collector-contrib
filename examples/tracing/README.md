@@ -6,5 +6,5 @@ make collector
 
 Then, start the test app in a second terminal that will generate traces and send them to the collector with:
 ```
-make testapp
+make run-testapp
 ```

@@ -1,4 +1,4 @@
-module testapp
+module github.com/open-telemetry/opentelemetry-collector-contrib/examples/tracing/testapp
 
 go 1.17
 
