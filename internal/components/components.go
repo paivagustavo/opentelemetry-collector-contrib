@@ -15,6 +15,7 @@
 package components // import "github.com/open-telemetry/opentelemetry-collector-contrib/internal/components"
 
 import (
+	"github.com/open-telemetry/opentelemetry-collector-contrib/processor/devmodeprocessor"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/exporter/loggingexporter"
 	"go.opentelemetry.io/collector/exporter/otlpexporter"
@@ -330,6 +331,7 @@ func Components() (component.Factories, error) {
 	processors := []component.ProcessorFactory{
 		attributesprocessor.NewFactory(),
 		batchprocessor.NewFactory(),
+		devmodeprocessor.NewFactory(),
 		filterprocessor.NewFactory(),
 		groupbyattrsprocessor.NewFactory(),
 		groupbytraceprocessor.NewFactory(),

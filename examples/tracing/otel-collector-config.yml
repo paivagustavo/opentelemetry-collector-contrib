@@ -15,6 +15,7 @@ exporters:
 
 processors:
   batch:
+  devmode:
 
 extensions:
   health_check:
@@ -29,4 +30,4 @@ service:
     traces:
       receivers: [otlp, zipkin]
       exporters: [zipkin, jaeger, logging]
-      processors: [batch]
+      processors: [devmode, batch]

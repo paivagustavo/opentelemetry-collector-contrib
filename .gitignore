@@ -34,3 +34,4 @@ integration-coverage.html
 # Wix
 *.wixobj
 *.wixpdb
+examples/tracing/otelcontribcol

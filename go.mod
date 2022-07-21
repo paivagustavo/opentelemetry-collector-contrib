@@ -68,6 +68,7 @@ require (
 	github.com/open-telemetry/opentelemetry-collector-contrib/processor/attributesprocessor v0.55.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/processor/cumulativetodeltaprocessor v0.55.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/processor/deltatorateprocessor v0.55.0
+	github.com/open-telemetry/opentelemetry-collector-contrib/processor/devmodeprocessor v0.55.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor v0.55.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/processor/groupbyattrsprocessor v0.55.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/processor/groupbytraceprocessor v0.55.0
@@ -779,6 +780,8 @@ replace github.com/open-telemetry/opentelemetry-collector-contrib/processor/attr
 replace github.com/open-telemetry/opentelemetry-collector-contrib/processor/cumulativetodeltaprocessor => ./processor/cumulativetodeltaprocessor/
 
 replace github.com/open-telemetry/opentelemetry-collector-contrib/processor/deltatorateprocessor => ./processor/deltatorateprocessor/
+
+replace github.com/open-telemetry/opentelemetry-collector-contrib/processor/devmodeprocessor => ./processor/devmodeprocessor/
 
 replace github.com/open-telemetry/opentelemetry-collector-contrib/processor/filterprocessor => ./processor/filterprocessor
 

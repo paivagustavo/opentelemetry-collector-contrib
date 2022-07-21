@@ -1,2 +1,3 @@
 all:
-	go run ../../cmd/otelcontribcol/ --config ./otel-collector-config.yml
+	go build ../../cmd/otelcontribcol/
+	 ./otelcontribcol --config ./otel-collector-config.yml
