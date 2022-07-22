@@ -12,20 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package devmode // import "github.com/open-telemetry/opentelemetry-collector-contrib/extension/devmode"
-
-import (
-	"go.opentelemetry.io/collector/config"
-)
-
-// Config stores the configuration for OAuth2 Client Credentials (2-legged OAuth2 flow) setup.
-type Config struct {
-	config.ExtensionSettings `mapstructure:",squash"`
-}
-
-var _ config.Extension = (*Config)(nil)
-
-// Validate checks if the extension configuration is valid
-func (cfg *Config) Validate() error {
-	return nil
-}
+package devmode // import "github.com/open-telemetry/opentelemetry-collector-contrib/extension/devmodeextension"

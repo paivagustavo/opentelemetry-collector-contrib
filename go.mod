@@ -50,7 +50,7 @@ require (
 	github.com/open-telemetry/opentelemetry-collector-contrib/extension/awsproxy v0.55.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/extension/basicauthextension v0.55.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/extension/bearertokenauthextension v0.55.0
-	github.com/open-telemetry/opentelemetry-collector-contrib/extension/devmode v0.55.0
+	github.com/open-telemetry/opentelemetry-collector-contrib/extension/devmodeextension v0.55.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/extension/fluentbitextension v0.55.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/extension/healthcheckextension v0.55.0
 	github.com/open-telemetry/opentelemetry-collector-contrib/extension/httpforwarder v0.55.0
@@ -721,7 +721,7 @@ replace github.com/open-telemetry/opentelemetry-collector-contrib/extension/basi
 
 replace github.com/open-telemetry/opentelemetry-collector-contrib/extension/bearertokenauthextension => ./extension/bearertokenauthextension
 
-replace github.com/open-telemetry/opentelemetry-collector-contrib/extension/devmode => ./extension/devmode
+replace github.com/open-telemetry/opentelemetry-collector-contrib/extension/devmodeextension => ./extension/devmodeextension
 
 replace github.com/open-telemetry/opentelemetry-collector-contrib/extension/fluentbitextension => ./extension/fluentbitextension
 

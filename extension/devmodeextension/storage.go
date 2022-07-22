@@ -35,17 +35,19 @@ const (
 		resource_attributes text
 	)
 `
-	getQueryText = "select trace_id from %s where span_id=?"
-	setQueryText = "insert into %s(span_id, trace_id) values(?,?) on conflict(span_id) do update set trace_id=?"
+	getQueryText    = "select trace_id from %s where span_id=?"
+	getAllQueryText = "select * from %s"
+	setQueryText    = "insert into %s(span_id, trace_id) values(?,?) on conflict(span_id) do update set trace_id=?"
 )
 
 type dbStorageClient struct {
 	driverName     string
 	datasourceName string
 
-	db       *sql.DB
-	getQuery *sql.Stmt
-	setQuery *sql.Stmt
+	db          *sql.DB
+	getQuery    *sql.Stmt
+	getAllQuery *sql.Stmt
+	setQuery    *sql.Stmt
 }
 
 func newClient(ctx context.Context, driverName, tableName string) (*dbStorageClient, error) {
@@ -70,33 +72,67 @@ func newClient(ctx context.Context, driverName, tableName string) (*dbStorageCli
 	if err != nil {
 		return nil, err
 	}
+	selectAllQuery, err := client.db.PrepareContext(ctx, fmt.Sprintf(getAllQueryText, tableName))
+	if err != nil {
+		return nil, err
+	}
 	setQuery, err := client.db.PrepareContext(ctx, fmt.Sprintf(setQueryText, tableName))
 	if err != nil {
 		return nil, err
 	}
 
 	client.getQuery = selectQuery
+	client.getAllQuery = selectAllQuery
 	client.setQuery = setQuery
 
 	return client, nil
 }
 
 // Get will retrieve data from storage that corresponds to the specified key
-func (c *dbStorageClient) Get(ctx context.Context, key string) ([]byte, error) {
+func (c *dbStorageClient) Get(ctx context.Context, key string) (*Span, error) {
 	rows, err := c.getQuery.QueryContext(ctx, key)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
+
 	if !rows.Next() {
 		return nil, nil
 	}
-	var result []byte
-	err = rows.Scan(&result)
+	span := &Span{}
+	err = rows.Scan(&span.SpanID, &span.TraceID, &span.ParentID, &span.StartTime, &span.EndTime, &span.attributes, &span.resourceAttributes)
 	if err != nil {
-		return result, err
+		return span, err
 	}
 	err = rows.Close()
-	return result, err
+	return span, err
+}
+
+// GetAll will retrieve all data from storage
+func (c *dbStorageClient) GetAll(ctx context.Context) ([][]byte, error) {
+	rows, err := c.getAllQuery.QueryContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results [][]byte
+	for rows.Next() {
+		var result []byte
+		err = rows.Scan(&result)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, result)
+	}
+
+	fmt.Println(results)
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
 
 // Set will store data. The data can be retrieved using the same key

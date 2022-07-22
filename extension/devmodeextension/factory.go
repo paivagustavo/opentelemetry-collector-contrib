@@ -16,6 +16,7 @@ package devmode // import "github.com/open-telemetry/opentelemetry-collector-con
 
 import (
 	"context"
+	"go.opentelemetry.io/collector/config/confignet"
 
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config"
@@ -23,7 +24,8 @@ import (
 
 const (
 	// The value of extension "type" in configuration.
-	typeStr = "devmode"
+	typeStr         = "devmode"
+	defaultEndpoint = "localhost:4000"
 )
 
 // NewFactory creates a factory for the OIDC Authenticator extension.
@@ -37,6 +39,9 @@ func NewFactory() component.ExtensionFactory {
 func createDefaultConfig() config.Extension {
 	return &Config{
 		ExtensionSettings: config.NewExtensionSettings(config.NewComponentID(typeStr)),
+		TCPAddr: confignet.TCPAddr{
+			Endpoint: defaultEndpoint,
+		},
 	}
 }
 

@@ -13,3 +13,26 @@
 // limitations under the License.
 
 package devmode // import "github.com/open-telemetry/opentelemetry-collector-contrib/extension/devmode"
+
+import (
+	"errors"
+
+	"go.opentelemetry.io/collector/config"
+	"go.opentelemetry.io/collector/config/confignet"
+)
+
+// Config stores the configuration for OAuth2 Client Credentials (2-legged OAuth2 flow) setup.
+type Config struct {
+	config.ExtensionSettings `mapstructure:",squash"`
+	TCPAddr                  confignet.TCPAddr `mapstructure:",squash"`
+}
+
+var _ config.Extension = (*Config)(nil)
+
+// Validate checks if the extension configuration is valid
+func (cfg *Config) Validate() error {
+	if cfg.TCPAddr.Endpoint == "" {
+		return errors.New("\"endpoint\" is required when using the \"devmode\" extension")
+	}
+	return nil
+}

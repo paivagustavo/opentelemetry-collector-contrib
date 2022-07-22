@@ -16,6 +16,7 @@ extensions:
   zpages:
     endpoint: ":55679"
   devmode:
+#    endpoint: ":4000"
 
 service:
   extensions: [pprof, zpages, health_check, devmode]
