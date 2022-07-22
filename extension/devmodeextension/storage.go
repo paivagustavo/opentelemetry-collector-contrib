@@ -38,7 +38,7 @@ const (
 	)
 `
 	getQueryText    = "select trace_id from %s where span_id=?"
-	getAllQueryText = "select * from %s"
+	getAllQueryText = "select * from %s order by start_time desc limit 50"
 	setQueryText    = `
 	insert into %s(
 		name,
@@ -125,10 +125,10 @@ func (c *dbStorageClient) Get(ctx context.Context, key string) (Span, error) {
 	span := Span{}
 	err = rows.Scan(&span.Name, &span.SpanID, &span.TraceID, &span.ParentID, &span.StartTime, &span.EndTime, &span.Attributes, &span.ResourceAttributes)
 	if err != nil {
-		return span, err
+		return Span{}, err
 	}
 	err = rows.Close()
-	return span, err
+	return span, nil
 }
 
 // GetAll will retrieve all data from storage

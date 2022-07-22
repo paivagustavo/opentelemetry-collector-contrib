@@ -8,7 +8,6 @@ import (
 	"go.uber.org/zap"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -54,7 +53,6 @@ func (d *devMode) getSpansHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	os.Stdout.Write(encodedSpans)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(encodedSpans)
 }
