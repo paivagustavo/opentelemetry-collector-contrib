@@ -8,11 +8,11 @@ type Span struct {
 	ParentID           sql.NullString
 	StartTime          sql.NullInt64
 	EndTime            sql.NullInt64
-	Attributes         []Attribute
-	ResourceAttributes []Attribute
+	Attributes         sql.NullString
+	ResourceAttributes sql.NullString
 }
 
-type Attribute struct {
-	Key   sql.NullString
-	Value sql.NullString
-}
+//type Attribute struct {
+//	Key   sql.NullString
+//	Value sql.NullString
+//}

@@ -11,20 +11,13 @@ import (
 	"os"
 )
 
-var (
-	dbClient *dbStorageClient
-	ctx      context.Context
-)
-
-// func parseSpans(rawSpans []byte) ([]Span, error) {}
-
-func getSpansHandler(w http.ResponseWriter, r *http.Request) {
+func (d *devMode) getSpansHandler(w http.ResponseWriter, r *http.Request) {
 	// queryValues := r.URL.Query()
 	// for when there is a query in the url, need logic to choose which param to search by
 	// and check for non-empty query values
 	// for now, just using GetAll
 
-	rawSpans, err := dbClient.Get(context.Background(), "span_id")
+	rawSpans, err := d.storage.GetAll(context.Background())
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -39,17 +32,15 @@ func getSpansHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(encodedSpans)
 }
 
-func startServer(ctx context.Context, logger *zap.Logger, host component.Host) error {
+func (d *devMode) startServer(ctx context.Context, logger *zap.Logger, host component.Host) error {
 	var err error
 	ctx = context.Background()
-	dbClient, err = newClient(ctx, "sqlite3", "spans", logger)
-
 	if err != nil {
 		return err
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/spans", getSpansHandler)
+	mux.HandleFunc("/spans", d.getSpansHandler)
 
 	// setting host as always 4000 for now
 	endpoint := ":4000"

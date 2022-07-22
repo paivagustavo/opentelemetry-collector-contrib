@@ -38,7 +38,18 @@ const (
 `
 	getQueryText    = "select trace_id from %s where span_id=?"
 	getAllQueryText = "select * from %s"
-	setQueryText    = "insert into %s(span_id, trace_id) values(?,?) on conflict(span_id) do update set trace_id=?"
+	setQueryText    = `
+	insert into %s(
+		span_id, 
+		trace_id, 
+		parent_id, 
+		start_time,
+		end_time, 
+		attributes,
+		resource_attributes
+	) 
+	values(?,?,?,?,?,?,?) 
+`
 )
 
 var _ Storer = (*dbStorageClient)(nil)
@@ -56,6 +67,7 @@ type dbStorageClient struct {
 
 func (c *dbStorageClient) StoreTrace(span Span) {
 	c.logger.Info("storing span", zap.String("span", fmt.Sprintf("%+v", span)))
+	c.Set(context.Background(), span)
 }
 
 func newClient(ctx context.Context, driverName, tableName string, logger *zap.Logger) (*dbStorageClient, error) {
@@ -99,17 +111,17 @@ func newClient(ctx context.Context, driverName, tableName string, logger *zap.Lo
 }
 
 // Get will retrieve data from storage that corresponds to the specified key
-func (c *dbStorageClient) Get(ctx context.Context, key string) (*Span, error) {
+func (c *dbStorageClient) Get(ctx context.Context, key string) (Span, error) {
 	rows, err := c.getQuery.QueryContext(ctx, key)
 	if err != nil {
-		return nil, err
+		return Span{}, err
 	}
 	defer rows.Close()
 
 	if !rows.Next() {
-		return nil, nil
+		return Span{}, nil
 	}
-	span := &Span{}
+	span := Span{}
 	err = rows.Scan(&span.SpanID, &span.TraceID, &span.ParentID, &span.StartTime, &span.EndTime, &span.Attributes, &span.ResourceAttributes)
 	if err != nil {
 		return span, err
@@ -119,35 +131,42 @@ func (c *dbStorageClient) Get(ctx context.Context, key string) (*Span, error) {
 }
 
 // GetAll will retrieve all data from storage
-func (c *dbStorageClient) GetAll(ctx context.Context) ([][]byte, error) {
+func (c *dbStorageClient) GetAll(ctx context.Context) ([]Span, error) {
 	rows, err := c.getAllQuery.QueryContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var results [][]byte
+	var spans []Span
 	for rows.Next() {
-		var result []byte
-		err = rows.Scan(&result)
+		span := Span{}
+		err = rows.Scan(&span.SpanID, &span.TraceID, &span.ParentID, &span.StartTime, &span.EndTime, &span.Attributes, &span.ResourceAttributes)
 		if err != nil {
 			return nil, err
 		}
 
-		results = append(results, result)
+		spans = append(spans, span)
 	}
 
-	fmt.Println(results)
+	fmt.Println(spans)
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return results, nil
+	return spans, nil
 }
 
 // Set will store data. The data can be retrieved using the same key
-func (c *dbStorageClient) Set(ctx context.Context, key string, value []byte) error {
-	_, err := c.setQuery.ExecContext(ctx, key, value, value)
+func (c *dbStorageClient) Set(ctx context.Context, span Span) error {
+	//		span_id,
+	//		trace_id,
+	//		parent_id,
+	//		start_time,
+	//		end_time,
+	//		attributes,
+	//		resource_attributes
+	_, err := c.setQuery.ExecContext(ctx, span.SpanID, span.TraceID, span.ParentID, span.StartTime, span.EndTime, span.Attributes, span.ResourceAttributes)
 	return err
 }
 

@@ -17,9 +17,11 @@ package devmodeprocessor // import "github.com/open-telemetry/opentelemetry-coll
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/extension/devmodeextension"
 	"go.opentelemetry.io/collector/pdata/ptrace"
 	"go.uber.org/zap"
+	"strings"
 )
 
 type devmodeProcessor struct {
@@ -54,30 +56,24 @@ func (dev *devmodeProcessor) processTraces(ctx context.Context, td ptrace.Traces
 				if !span.ParentSpanID().IsEmpty() {
 					ds.TraceID = newString(span.ParentSpanID().HexString())
 				}
-
+				var attrs []string
 				for key := range span.Attributes().AsRaw() {
 					value, ok := span.Attributes().Get(key)
+
 					if ok {
-						ds.Attributes = append(ds.Attributes,
-							devmodeextension.Attribute{
-								Key:   newString(key),
-								Value: newString(value.AsString()),
-							},
-						)
+						attrs = append(attrs, fmt.Sprintf("%s=%s", key, value.AsString()))
 					}
 				}
+				ds.Attributes = newString(strings.Join(attrs, ","))
 
+				var rscAttrs []string
 				for key := range resource.Attributes().AsRaw() {
 					value, ok := resource.Attributes().Get(key)
 					if ok {
-						ds.ResourceAttributes = append(ds.Attributes,
-							devmodeextension.Attribute{
-								Key:   newString(key),
-								Value: newString(value.AsString()),
-							},
-						)
+						rscAttrs = append(rscAttrs, fmt.Sprintf("%s=%s", key, value.AsString()))
 					}
 				}
+				ds.ResourceAttributes = newString(strings.Join(rscAttrs, ","))
 
 				devmodeextension.Storage.StoreTrace(ds)
 			}
