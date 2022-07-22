@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func (d *devMode) getSpansHandler(w http.ResponseWriter, r *http.Request) {
@@ -22,6 +23,32 @@ func (d *devMode) getSpansHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+
+	for i := range rawSpans {
+		rawSpans[i].AttributesMap = make(map[string]string)
+		rawSpans[i].ResourceAttributesMap = make(map[string]string)
+
+		for _, attr := range strings.Split(rawSpans[i].Attributes, ",") {
+			attrStr := strings.Split(attr, "=")
+			if len(attrStr) == 2 {
+				rawSpans[i].AttributesMap[attrStr[0]] = attrStr[1]
+			} else {
+				d.logger.Info("attribute with wrong format", zap.String("attribute", attr))
+			}
+		}
+		rawSpans[i].Attributes = ""
+
+		for _, attr := range strings.Split(rawSpans[i].ResourceAttributes, ",") {
+			attrStr := strings.Split(attr, "=")
+			if len(attrStr) == 2 {
+				rawSpans[i].ResourceAttributesMap[attrStr[0]] = attrStr[1]
+			} else {
+				d.logger.Info("attribute with wrong format", zap.String("attribute", attr))
+			}
+		}
+		rawSpans[i].ResourceAttributes = ""
+	}
+
 	encodedSpans, err := json.Marshal(rawSpans)
 	if err != nil {
 		http.NotFound(w, r)
@@ -43,8 +70,8 @@ func (d *devMode) startServer(ctx context.Context, logger *zap.Logger, host comp
 	mux.HandleFunc("/spans", d.getSpansHandler)
 
 	// setting host as always 4000 for now
-	endpoint := ":4000"
-	log.Printf(`Starting server on %s`, host)
+	endpoint := "localhost:4000"
+	log.Printf(`Starting server on %s`, endpoint)
 
 	go func() {
 		if errHTTP := http.ListenAndServe(endpoint, mux); errHTTP != nil && !errors.Is(errHTTP, http.ErrServerClosed) {

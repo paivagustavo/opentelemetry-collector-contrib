@@ -123,7 +123,7 @@ func doWork() {
 	}
 }
 
-var addr = flag.String("listen-address", ":8082", "The address to listen on for HTTP requests.")
+var addr = flag.String("listen-address", "localhost:8082", "The address to listen on for HTTP requests.")
 
 func Healthcheck(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
