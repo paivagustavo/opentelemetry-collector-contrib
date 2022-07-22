@@ -31,7 +31,7 @@ func newDevMode(ctx context.Context, c *Config, logger *zap.Logger) (component.E
 
 func (d *devMode) Start(ctx context.Context, host component.Host) error {
 	d.logger.Info("starting devmode!")
-	err := startServer(context.Background(), d.logger)
+	err := startServer(context.Background(), d.logger, host)
 
 	return err
 }

@@ -3,6 +3,8 @@ package devmodeextension
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"go.opentelemetry.io/collector/component"
 	"go.uber.org/zap"
 	"log"
 	"net/http"
@@ -37,7 +39,7 @@ func getSpansHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(encodedSpans)
 }
 
-func startServer(ctx context.Context, logger *zap.Logger) error {
+func startServer(ctx context.Context, logger *zap.Logger, host component.Host) error {
 	var err error
 	ctx = context.Background()
 	dbClient, err = newClient(ctx, "sqlite3", "spans", logger)
@@ -50,8 +52,14 @@ func startServer(ctx context.Context, logger *zap.Logger) error {
 	mux.HandleFunc("/spans", getSpansHandler)
 
 	// setting host as always 4000 for now
-	host := ":4000"
+	endpoint := ":4000"
 	log.Printf(`Starting server on %s`, host)
-	err = http.ListenAndServe(host, mux)
+
+	go func() {
+		if errHTTP := http.ListenAndServe(endpoint, mux); errHTTP != nil && !errors.Is(errHTTP, http.ErrServerClosed) {
+			host.ReportFatalError(errHTTP)
+		}
+	}()
+
 	return err
 }
