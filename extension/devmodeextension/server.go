@@ -21,7 +21,7 @@ func getSpansHandler(w http.ResponseWriter, r *http.Request) {
 	// and check for non-empty query values
 	// for now, just using GetAll
 
-	rawSpans, err := dbClient.Get(ctx, "span_id")
+	rawSpans, err := dbClient.Get(context.Background(), "span_id")
 	if err != nil {
 		http.NotFound(w, r)
 		return
