@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package devmode // import "github.com/open-telemetry/opentelemetry-collector-contrib/extension/storage/dbstorage"
+package devmodeextension // import "github.com/open-telemetry/opentelemetry-collector-contrib/extension/storage/dbstorage"
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
+	"go.uber.org/zap"
 
 	// SQLite driver
 	_ "github.com/mattn/go-sqlite3"
@@ -40,18 +41,27 @@ const (
 	setQueryText    = "insert into %s(span_id, trace_id) values(?,?) on conflict(span_id) do update set trace_id=?"
 )
 
+var _ Storer = (*dbStorageClient)(nil)
+
 type dbStorageClient struct {
 	driverName     string
 	datasourceName string
 
 	db          *sql.DB
 	getQuery    *sql.Stmt
-	getAllQuery *sql.Stmt
 	setQuery    *sql.Stmt
+	getAllQuery *sql.Stmt
+	logger      *zap.Logger
 }
 
-func newClient(ctx context.Context, driverName, tableName string) (*dbStorageClient, error) {
-	client := &dbStorageClient{}
+func (c *dbStorageClient) StoreTrace(span Span) {
+	c.logger.Info("storing span", zap.String("span", fmt.Sprintf("%+v", span)))
+}
+
+func newClient(ctx context.Context, driverName, tableName string, logger *zap.Logger) (*dbStorageClient, error) {
+	client := &dbStorageClient{
+		logger: logger,
+	}
 	var err error
 
 	client.db, err = sql.Open(driverName, ":memory:")
@@ -100,7 +110,7 @@ func (c *dbStorageClient) Get(ctx context.Context, key string) (*Span, error) {
 		return nil, nil
 	}
 	span := &Span{}
-	err = rows.Scan(&span.SpanID, &span.TraceID, &span.ParentID, &span.StartTime, &span.EndTime, &span.attributes, &span.resourceAttributes)
+	err = rows.Scan(&span.SpanID, &span.TraceID, &span.ParentID, &span.StartTime, &span.EndTime, &span.Attributes, &span.ResourceAttributes)
 	if err != nil {
 		return span, err
 	}

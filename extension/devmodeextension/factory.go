@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package devmode // import "github.com/open-telemetry/opentelemetry-collector-contrib/extension/devmode"
+package devmodeextension // import "github.com/open-telemetry/opentelemetry-collector-contrib/extension/devmode"
 
 import (
 	"context"
@@ -45,6 +45,6 @@ func createDefaultConfig() config.Extension {
 	}
 }
 
-func createExtension(_ context.Context, set component.ExtensionCreateSettings, cfg config.Extension) (component.Extension, error) {
-	return newDevMode(cfg.(*Config), set.Logger)
+func createExtension(ctx context.Context, set component.ExtensionCreateSettings, cfg config.Extension) (component.Extension, error) {
+	return newDevMode(ctx, cfg.(*Config), set.Logger)
 }

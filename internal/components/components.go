@@ -181,7 +181,7 @@ func Components() (component.Factories, error) {
 		basicauthextension.NewFactory(),
 		bearertokenauthextension.NewFactory(),
 		dbstorage.NewFactory(),
-		devmode.NewFactory(),
+		devmodeextension.NewFactory(),
 		ecstaskobserver.NewFactory(),
 		filestorage.NewFactory(),
 		fluentbitextension.NewFactory(),

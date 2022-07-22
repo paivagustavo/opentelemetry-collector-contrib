@@ -1,8 +1,9 @@
-package devmode
+package devmodeextension
 
 import (
 	"context"
 	"encoding/json"
+	"go.uber.org/zap"
 	"log"
 	"net/http"
 	"os"
@@ -36,10 +37,10 @@ func getSpansHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(encodedSpans)
 }
 
-func startServer(ctx context.Context) error {
+func startServer(ctx context.Context, logger *zap.Logger) error {
 	var err error
 	ctx = context.Background()
-	dbClient, err = newClient(ctx, "sqlite3", "spans")
+	dbClient, err = newClient(ctx, "sqlite3", "spans", logger)
 
 	if err != nil {
 		return err

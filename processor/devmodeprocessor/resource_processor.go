@@ -16,7 +16,8 @@ package devmodeprocessor // import "github.com/open-telemetry/opentelemetry-coll
 
 import (
 	"context"
-
+	"database/sql"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/extension/devmodeextension"
 	"go.opentelemetry.io/collector/pdata/ptrace"
 	"go.uber.org/zap"
 )
@@ -29,18 +30,56 @@ func (dev *devmodeProcessor) processTraces(ctx context.Context, td ptrace.Traces
 	rss := td.ResourceSpans()
 	for i := 0; i < rss.Len(); i++ {
 		ss := rss.At(i).ScopeSpans()
+		resource := rss.At(i).Resource()
 		// TODO: rss.At(i).Resource() used this for getting the resource attributes
 		for j := 0; j < ss.Len(); j++ {
 			spans := ss.At(j).Spans()
 			for k := 0; k < spans.Len(); k++ {
 				span := spans.At(k)
-				// TODO: store this span on the devmode storage.
-				// 	remember to save the resource attributes as well.
 
-				// TODO: Need to define how the processor will write to the extension storage.
+				newString := func(str string) sql.NullString {
+					return sql.NullString{
+						String: str,
+						Valid:  true,
+					}
+				}
 
-				// Log each trace_id/span_id
-				dev.logger.Info(span.TraceID().HexString() + " - " + span.SpanID().HexString())
+				ds := devmodeextension.Span{
+					SpanID:    newString(span.SpanID().HexString()),
+					TraceID:   newString(span.TraceID().HexString()),
+					StartTime: sql.NullInt64{Int64: span.StartTimestamp().AsTime().UnixMilli(), Valid: true},
+					EndTime:   sql.NullInt64{Int64: span.EndTimestamp().AsTime().UnixMilli(), Valid: true},
+				}
+
+				if !span.ParentSpanID().IsEmpty() {
+					ds.TraceID = newString(span.ParentSpanID().HexString())
+				}
+
+				for key := range span.Attributes().AsRaw() {
+					value, ok := span.Attributes().Get(key)
+					if ok {
+						ds.Attributes = append(ds.Attributes,
+							devmodeextension.Attribute{
+								Key:   newString(key),
+								Value: newString(value.AsString()),
+							},
+						)
+					}
+				}
+
+				for key := range resource.Attributes().AsRaw() {
+					value, ok := resource.Attributes().Get(key)
+					if ok {
+						ds.ResourceAttributes = append(ds.Attributes,
+							devmodeextension.Attribute{
+								Key:   newString(key),
+								Value: newString(value.AsString()),
+							},
+						)
+					}
+				}
+
+				devmodeextension.Storage.StoreTrace(ds)
 			}
 		}
 	}
