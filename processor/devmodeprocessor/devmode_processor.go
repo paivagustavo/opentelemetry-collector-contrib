@@ -16,7 +16,6 @@ package devmodeprocessor // import "github.com/open-telemetry/opentelemetry-coll
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/extension/devmodeextension"
 	"go.opentelemetry.io/collector/pdata/ptrace"
@@ -39,22 +38,16 @@ func (dev *devmodeProcessor) processTraces(ctx context.Context, td ptrace.Traces
 			for k := 0; k < spans.Len(); k++ {
 				span := spans.At(k)
 
-				newString := func(str string) sql.NullString {
-					return sql.NullString{
-						String: str,
-						Valid:  true,
-					}
-				}
-
 				ds := devmodeextension.Span{
-					SpanID:    newString(span.SpanID().HexString()),
-					TraceID:   newString(span.TraceID().HexString()),
-					StartTime: sql.NullInt64{Int64: span.StartTimestamp().AsTime().UnixMilli(), Valid: true},
-					EndTime:   sql.NullInt64{Int64: span.EndTimestamp().AsTime().UnixMilli(), Valid: true},
+					SpanID:    span.SpanID().HexString(),
+					Name:      span.Name(),
+					TraceID:   span.TraceID().HexString(),
+					StartTime: span.StartTimestamp().AsTime().UnixMilli(),
+					EndTime:   span.EndTimestamp().AsTime().UnixMilli(),
 				}
 
 				if !span.ParentSpanID().IsEmpty() {
-					ds.TraceID = newString(span.ParentSpanID().HexString())
+					ds.ParentID = span.ParentSpanID().HexString()
 				}
 				var attrs []string
 				for key := range span.Attributes().AsRaw() {
@@ -64,7 +57,7 @@ func (dev *devmodeProcessor) processTraces(ctx context.Context, td ptrace.Traces
 						attrs = append(attrs, fmt.Sprintf("%s=%s", key, value.AsString()))
 					}
 				}
-				ds.Attributes = newString(strings.Join(attrs, ","))
+				ds.Attributes = strings.Join(attrs, ",")
 
 				var rscAttrs []string
 				for key := range resource.Attributes().AsRaw() {
@@ -73,9 +66,9 @@ func (dev *devmodeProcessor) processTraces(ctx context.Context, td ptrace.Traces
 						rscAttrs = append(rscAttrs, fmt.Sprintf("%s=%s", key, value.AsString()))
 					}
 				}
-				ds.ResourceAttributes = newString(strings.Join(rscAttrs, ","))
+				ds.ResourceAttributes = strings.Join(rscAttrs, ",")
 
-				devmodeextension.Storage.StoreTrace(ds)
+				devmodeextension.Storage.StoreSpan(ds)
 			}
 		}
 	}

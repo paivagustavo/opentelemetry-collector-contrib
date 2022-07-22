@@ -27,6 +27,7 @@ import (
 const (
 	createTable = `
 	create table if not exists %s (
+		name text,
 		span_id text primary key, 
 		trace_id text, 
 		parent_id text, 
@@ -40,6 +41,7 @@ const (
 	getAllQueryText = "select * from %s"
 	setQueryText    = `
 	insert into %s(
+		name,
 		span_id, 
 		trace_id, 
 		parent_id, 
@@ -48,7 +50,7 @@ const (
 		attributes,
 		resource_attributes
 	) 
-	values(?,?,?,?,?,?,?) 
+	values(?,?,?,?,?,?,?,?) 
 `
 )
 
@@ -65,8 +67,7 @@ type dbStorageClient struct {
 	logger      *zap.Logger
 }
 
-func (c *dbStorageClient) StoreTrace(span Span) {
-	c.logger.Info("storing span", zap.String("span", fmt.Sprintf("%+v", span)))
+func (c *dbStorageClient) StoreSpan(span Span) {
 	c.Set(context.Background(), span)
 }
 
@@ -122,7 +123,7 @@ func (c *dbStorageClient) Get(ctx context.Context, key string) (Span, error) {
 		return Span{}, nil
 	}
 	span := Span{}
-	err = rows.Scan(&span.SpanID, &span.TraceID, &span.ParentID, &span.StartTime, &span.EndTime, &span.Attributes, &span.ResourceAttributes)
+	err = rows.Scan(&span.Name, &span.SpanID, &span.TraceID, &span.ParentID, &span.StartTime, &span.EndTime, &span.Attributes, &span.ResourceAttributes)
 	if err != nil {
 		return span, err
 	}
@@ -141,7 +142,7 @@ func (c *dbStorageClient) GetAll(ctx context.Context) ([]Span, error) {
 	var spans []Span
 	for rows.Next() {
 		span := Span{}
-		err = rows.Scan(&span.SpanID, &span.TraceID, &span.ParentID, &span.StartTime, &span.EndTime, &span.Attributes, &span.ResourceAttributes)
+		err = rows.Scan(&span.Name, &span.SpanID, &span.TraceID, &span.ParentID, &span.StartTime, &span.EndTime, &span.Attributes, &span.ResourceAttributes)
 		if err != nil {
 			return nil, err
 		}
@@ -149,7 +150,6 @@ func (c *dbStorageClient) GetAll(ctx context.Context) ([]Span, error) {
 		spans = append(spans, span)
 	}
 
-	fmt.Println(spans)
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
@@ -159,14 +159,7 @@ func (c *dbStorageClient) GetAll(ctx context.Context) ([]Span, error) {
 
 // Set will store data. The data can be retrieved using the same key
 func (c *dbStorageClient) Set(ctx context.Context, span Span) error {
-	//		span_id,
-	//		trace_id,
-	//		parent_id,
-	//		start_time,
-	//		end_time,
-	//		attributes,
-	//		resource_attributes
-	_, err := c.setQuery.ExecContext(ctx, span.SpanID, span.TraceID, span.ParentID, span.StartTime, span.EndTime, span.Attributes, span.ResourceAttributes)
+	_, err := c.setQuery.ExecContext(ctx, span.Name, span.SpanID, span.TraceID, span.ParentID, span.StartTime, span.EndTime, span.Attributes, span.ResourceAttributes)
 	return err
 }
 

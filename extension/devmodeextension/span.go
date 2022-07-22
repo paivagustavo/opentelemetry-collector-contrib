@@ -1,15 +1,14 @@
 package devmodeextension
 
-import "database/sql"
-
 type Span struct {
-	SpanID             sql.NullString
-	TraceID            sql.NullString
-	ParentID           sql.NullString
-	StartTime          sql.NullInt64
-	EndTime            sql.NullInt64
-	Attributes         sql.NullString
-	ResourceAttributes sql.NullString
+	Name               string `json:"name"`
+	SpanID             string `json:"span_id"`
+	TraceID            string `json:"trace_id"`
+	ParentID           string `json:"parent_id,omitempty"`
+	StartTime          int64  `json:"start_time"`
+	EndTime            int64  `json:"end_time"`
+	Attributes         string `json:"attributes,omitempty"`
+	ResourceAttributes string `json:"resource_attributes,omitempty"`
 }
 
 //type Attribute struct {
